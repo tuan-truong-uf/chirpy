@@ -8,6 +8,8 @@ import type { RouterOutputs } from "~/utils/api";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { LoadingPage } from "~/components/loading";
+import { type NextPage } from "next";
 
 dayjs.extend(relativeTime);
 
@@ -60,19 +62,38 @@ const PostView = (props: PostWithUser) => {
         <span>{post.content}</span>
       </div>
     </div>
-  )
-}
+  );
+};
 
 
-export default function Home() {
+const Feed = () => {
 
-  const user = useUser();
+  const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
 
-  const { data, isLoading } = api.posts.getAll.useQuery();
-
-  if (isLoading) return <div>Loading...</div>;
+  if (postsLoading) return <LoadingPage />;
 
   if (!data) return <div>Something went wrong</div>;
+
+  return (
+    <div className="flex flex-col">
+      {[...data, ...data]?.map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
+      ))}
+    </div>
+  );
+
+};
+
+
+const Home: NextPage = () => {
+
+  const {isLoaded: userLoaded, isSignedIn} = useUser();
+
+  // Start fetching asap
+  api.posts.getAll.useQuery();
+
+  // Return empty div if user isn't loadede
+  if (!userLoaded) return <div />;
 
   return (
     <>
@@ -84,20 +105,19 @@ export default function Home() {
       <main className="flex h-screen justify-center">
         <div className="h-full w-full border-x border-slate-400 md:max-w-2xl">
           <div className="border-b border-slate-400 p-4">
-            {!user.isSignedIn && (
+            {!isSignedIn && (
               <div className="flex justify-center">
                 <SignInButton />
-              </div>)}
-            {user.isSignedIn && <CreatePostWizard />}
+              </div>
+              )}
+              {isSignedIn && <CreatePostWizard />}
           </div>
-          <div className="flex flex-col">
-            {[...data, ...data]?.map((fullPost) => (
-              <PostView {...fullPost} key={fullPost.post.id} />
-            ))}
-          </div>
-          <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" />
-        </div>
+
+          <Feed />
+        </div>  
       </main>
     </>
   );
 };
+
+export default Home;
