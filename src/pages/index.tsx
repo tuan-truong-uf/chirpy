@@ -8,9 +8,10 @@ import type { RouterOutputs } from "~/utils/api";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { LoadingPage } from "~/components/loading";
+import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { type NextPage } from "next";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 dayjs.extend(relativeTime);
 
@@ -27,6 +28,14 @@ const CreatePostWizard = () => {
       setInput("");
       void ctx.posts.getAll.invalidate();
     },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Failed to post! Please try again later.");
+      }
+    }
   });
 
 
@@ -36,24 +45,41 @@ const CreatePostWizard = () => {
 
 
   return (
-  <div className="flex gap-3 w-full">
-    <Image 
-      src={user.imageUrl} 
-      alt="Profile image" 
-      className="w-14 h-14 rounded-full"
-      width={56}
-      height={56}
-    />
-    <input 
-      placeholder="Type some emojis!" 
-      className="bg-transparent grow outline-none"
-      type="text"
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
-      disabled={isPosting}
-    />
-    < button onClick={() => mutate({content: input})}>Post</button>
-  </div>
+    <div className="flex gap-3 w-full">
+      <Image 
+        src={user.imageUrl} 
+        alt="Profile image" 
+        className="w-14 h-14 rounded-full"
+        width={56}
+        height={56}
+      />
+      <input 
+        placeholder="Type some emojis!" 
+        className="bg-transparent grow outline-none"
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (input != "") {
+              mutate({content: input});
+            }
+          }
+        }}
+        disabled={isPosting}
+      />
+      {input != "" && !isPosting && (
+        <button onClick={() => mutate({content: input})}>
+          Post
+        </button>
+      )}
+      {isPosting && (
+        <div className="flex justify-center items-center">
+          <LoadingSpinner size={20} />
+        </div>
+      )}
+    </div>
   );
 };
 
