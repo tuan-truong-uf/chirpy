@@ -1,4 +1,4 @@
-import { SignIn, SignInButton, useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
@@ -57,9 +57,10 @@ const PostView = (props: PostWithUser) => {
       <div className="flex flex-col">
         <div className="flex text-slate-300 gap-1">
           <span>{`@${author.username} `}</span>
-          <span className="font-thin">{` · ${dayjs(post.createdAt).fromNow()}`}</span>
+          <span className="font-thin">{` · ${dayjs(post.createdAt).fromNow()}`}
+          </span>
         </div>
-        <span>{post.content}</span>
+        <span className="text-2xl">{post.content}</span>
       </div>
     </div>
   );
