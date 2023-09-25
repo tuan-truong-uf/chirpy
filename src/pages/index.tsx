@@ -33,11 +33,7 @@ const CreatePostWizard = () => {
     }
   });
 
-
-  console.log(user);
-
   if (!user) return null;
-
 
   return (
     <div className="flex gap-3 w-full">
@@ -57,14 +53,14 @@ const CreatePostWizard = () => {
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            if (input != "") {
+            if (input !== "") {
               mutate({content: input});
             }
           }
         }}
         disabled={isPosting}
       />
-      {input != "" && !isPosting && (
+      {input !== "" && !isPosting && (
         <button onClick={() => mutate({content: input})}>
           Post
         </button>
