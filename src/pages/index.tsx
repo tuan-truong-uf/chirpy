@@ -25,7 +25,7 @@ const CreatePostWizard = () => {
     },
     onError: (e) => {
       const errorMessage = e.data?.zodError?.fieldErrors.content;
-      if (errorMessage && errorMessage[0]) {
+      if (errorMessage?.[0]) {
         toast.error(errorMessage[0]);
       } else {
         toast.error("Failed to post! Please try again later.");
@@ -60,12 +60,12 @@ const CreatePostWizard = () => {
         }}
         disabled={isPosting}
       />
-      {input !== "" && !isPosting && (
+      {input !== "" ?? !isPosting ?? (
         <button onClick={() => mutate({content: input})}>
           Post
         </button>
       )}
-      {isPosting && (
+      {isPosting ?? (
         <div className="flex justify-center items-center">
           <LoadingSpinner size={20} />
         </div>
@@ -80,7 +80,11 @@ const Feed = () => {
 
   const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
 
-  if (postsLoading) return <LoadingPage />;
+  if (postsLoading) return (
+    <div className="flex grow">
+      <LoadingPage />
+    </div>
+    );
 
   if (!data) return <div>Something went wrong</div>;
 
@@ -91,11 +95,10 @@ const Feed = () => {
       ))}
     </div>
   );
-
 };
 
 
-const Home: NextPage = () => {
+const Home: NextPage = () => {  
 
   const {isLoaded: userLoaded, isSignedIn} = useUser();
 
@@ -108,13 +111,14 @@ const Home: NextPage = () => {
   return (
       <PageLayout>
         <div className="flex border-b border-slate-400 p-4">
-          {!isSignedIn && (
+          {!isSignedIn ?? (
             <div className="flex justify-center">
               <SignInButton />
             </div>
           )}
-          {isSignedIn && <CreatePostWizard />}
+          {isSignedIn ?? <CreatePostWizard />}
         </div>
+
         <Feed />
       </PageLayout>
   );
